@@ -9,7 +9,6 @@
 
     var manifestUri;
     var canvasUri;
-    var windowObjects = [];
 
     var match = location.search.match(/(?:&|\?)manifest=(.+?)(?:&|$)/);
     if (match) {
@@ -23,10 +22,10 @@
         $.getJSON(manifestUri, function(manifest) {
             var canvasId;
             if (canvasUri) {
-                var canvasUri_ = canvasUri.replace(/^https?:/, '');
+                var canvasUri_ = canvasUri.replace(/^https:/, 'http:');
                 try {
                     for (var i = 0; i < manifest.sequences[0].canvases.length; i++) {
-                        if (manifest.sequences[0].canvases[i]['@id'].replace(/^https?:/, '') === canvasUri_) {
+                        if (manifest.sequences[0].canvases[i]['@id'].replace(/^https:/, 'http:') === canvasUri_) {
                             canvasId = canvasUri;
                             break;
                         }
@@ -41,13 +40,12 @@
                 windowObject.canvasID = canvasId;
             }
             windowObject.viewType = 'ImageView';
-            windowObjects.push(windowObject);
             Mirador({
                 id: 'viewer',
                 layout: '1x1',
                 buildPath: 'http://projectmirador.org/demo/',
                 data: [{ manifestUri: manifestUri, location: '' }],
-                windowObjects: windowObjects,
+                windowObjects: [windowObject],
                 annotationEndpoint: {
                     name: 'Local Storage',
                     module: 'LocalStorageEndpoint'
@@ -56,6 +54,18 @@
             if (history && history.replaceState && history.state !== undefined) {
                 var newUrl = '?manifest=' + manifestUri;
                 history.replaceState(null, document.title, newUrl);
+            }
+        });
+    } else {
+        Mirador({
+            id: 'viewer',
+            layout: '1x1',
+            buildPath: 'http://projectmirador.org/demo/',
+            data: [],
+            windowObjects: [],
+            annotationEndpoint: {
+                name: 'Local Storage',
+                module: 'LocalStorageEndpoint'
             }
         });
     }
